@@ -40,7 +40,7 @@ function validateAppointment(body) {
 }
 
 
-app.get("/appointments", async (req, res) => {
+app.get("/api/appointments", async (req, res) => {
   try {
     const { data, error } = await supabase.from("appointments").select("*").order("date", { ascending: true });
     if (error) throw error;
@@ -52,7 +52,7 @@ app.get("/appointments", async (req, res) => {
 });
 
 // Get appointments for a specific date
-app.get("/appointments/date/:date", async (req, res) => {
+app.get("/api/appointments/date/:date", async (req, res) => {
   try {
     const { date } = req.params;
     const { data, error } = await supabase
@@ -67,7 +67,7 @@ app.get("/appointments/date/:date", async (req, res) => {
   }
 });
 
-app.post("/appointments", async (req, res) => {
+app.post("/api/appointments", async (req, res) => {
   const validationError = validateAppointment(req.body);
   if (validationError) {
     return res.status(400).json({ error: validationError });
@@ -83,7 +83,7 @@ app.post("/appointments", async (req, res) => {
   }
 });
 
-app.delete("/appointments/:id", async (req, res) => {
+app.delete("/api/appointments/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { error } = await supabase.from("appointments").delete().eq("id", id);
