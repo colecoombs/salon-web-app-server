@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "dependencies": {
     "@supabase/supabase-js": "^2.50.0",
     "bcryptjs": "^3.0.2",
@@ -18,6 +19,14 @@
   "main": "index.js",
   "devDependencies": {
     "nodemon": "^3.1.10"
+=======
+  "name": "salon-web-app-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+>>>>>>> 96c036ff38ef1a4b2e7bd31926df605b32b639ac
   },
   "repository": {
     "type": "git",
@@ -26,9 +35,25 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+<<<<<<< HEAD
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/colecoombs/salon-web-app-server/issues"
   },
   "homepage": "https://github.com/colecoombs/salon-web-app-server#readme"
+=======
+  "bugs": {
+    "url": "https://github.com/colecoombs/salon-web-app-server/issues"
+  },
+  "homepage": "https://github.com/colecoombs/salon-web-app-server#readme",
+  "description": "",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.51.0",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "morgan": "^1.10.0"
+  }
+>>>>>>> 96c036ff38ef1a4b2e7bd31926df605b32b639ac
 }
