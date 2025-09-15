@@ -2,6 +2,7 @@
   "name": "salon-web-app-server",
   "version": "1.0.0",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
@@ -20,10 +21,12 @@
   "description": "",
   "dependencies": {
     "@supabase/supabase-js": "^2.51.0",
-    "body-parser": "^2.2.0",
+    "body-parser": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
   }
 }

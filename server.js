@@ -5,8 +5,8 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import dotenv from "dotenv";
 
-import adminRoutes from "./admin.js";          // POST /api/login, GET /api/admin/appointments
-import appointmentRoutes from "./appointments.js"; // GET/POST/GET-all under /api/appointments
+import adminRoutes from "./routes/admin.js";          // POST /api/login, GET /api/admin/appointments
+import appointmentRoutes from "./routes/appointments.js"; // GET/POST/GET-all under /api/appointments
 
 dotenv.config();
 
