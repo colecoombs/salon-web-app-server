@@ -39,6 +39,7 @@ function validateAppointment(body) {
   return null;
 }
 
+
 app.get("/appointments", async (req, res) => {
   try {
     const { data, error } = await supabase.from("appointments").select("*").order("date", { ascending: true });
@@ -46,6 +47,22 @@ app.get("/appointments", async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error("GET /appointments error:", err);
+    res.status(500).json({ error: err.message || err });
+  }
+});
+
+// Get appointments for a specific date
+app.get("/appointments/date/:date", async (req, res) => {
+  try {
+    const { date } = req.params;
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("*")
+      .eq("date", date);
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error("GET /appointments/date/:date error:", err);
     res.status(500).json({ error: err.message || err });
   }
 });
