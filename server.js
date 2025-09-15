@@ -1,98 +1,45 @@
-// server.js
+// server.js  (ESM)
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { createClient } from "@supabase/supabase-js";
-import dotenv from "dotenv";
 import morgan from "morgan";
+import dotenv from "dotenv";
 
-// Load environment variables
+import adminRoutes from "./admin.js";          // POST /api/login, GET /api/admin/appointments
+import appointmentRoutes from "./appointments.js"; // GET/POST/GET-all under /api/appointments
+
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
+// --- Middleware ---
 app.use(cors());
 app.use(bodyParser.json());
-app.use(morgan("dev")); // Logging middleware
+app.use(morgan("dev"));
 
-// Check for required environment variables
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("Missing Supabase environment variables. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your .env file.");
-  process.exit(1);
-}
+// (Optional) trust proxy if deploying behind Render/Netlify proxies
+app.set("trust proxy", 1);
 
-// Supabase connection
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // For server-side ops only
-);
+// --- Basic health check ---
+app.get("/health", (_req, res) => res.json({ ok: true }));
 
-// Input validation helper
-function validateAppointment(body) {
-  const { name, phone, service, date, time } = body;
-  if (!name || typeof name !== "string") return "Invalid or missing name.";
-  if (!phone || typeof phone !== "string") return "Invalid or missing phone.";
-  if (!service || typeof service !== "string") return "Invalid or missing service.";
-  if (!date || typeof date !== "string") return "Invalid or missing date.";
-  if (!time || typeof time !== "string") return "Invalid or missing time.";
-  return null;
-}
+// --- Mount routers ---
+// NOTE: Both routers are self-contained and connect to Supabase using env vars.
+app.use("/api", adminRoutes);
+app.use("/api", appointmentRoutes);
 
-
-app.get("/api/appointments", async (req, res) => {
-  try {
-    const { data, error } = await supabase.from("appointments").select("*").order("date", { ascending: true });
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    console.error("GET /appointments error:", err);
-    res.status(500).json({ error: err.message || err });
-  }
+// --- 404 handler (after routes) ---
+app.use((req, res) => {
+  res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });
 });
 
-// Get appointments for a specific date
-app.get("/api/appointments/date/:date", async (req, res) => {
-  try {
-    const { date } = req.params;
-    const { data, error } = await supabase
-      .from("appointments")
-      .select("*")
-      .eq("date", date);
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    console.error("GET /appointments/date/:date error:", err);
-    res.status(500).json({ error: err.message || err });
-  }
+// --- Error handler ---
+app.use((err, _req, res, _next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: err.message || "Server error" });
 });
 
-app.post("/api/appointments", async (req, res) => {
-  const validationError = validateAppointment(req.body);
-  if (validationError) {
-    return res.status(400).json({ error: validationError });
-  }
-  try {
-    const { name, phone, service, date, time } = req.body;
-    const { data, error } = await supabase.from("appointments").insert([{ name, phone, service, date, time }]);
-    if (error) throw error;
-    res.status(201).json(data);
-  } catch (err) {
-    console.error("POST /appointments error:", err);
-    res.status(500).json({ error: err.message || err });
-  }
+app.listen(port, () => {
+  console.log(`Salon backend listening on port ${port}`);
 });
-
-app.delete("/api/appointments/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { error } = await supabase.from("appointments").delete().eq("id", id);
-    if (error) throw error;
-    res.status(204).send();
-  } catch (err) {
-    console.error("DELETE /appointments/:id error:", err);
-    res.status(500).json({ error: err.message || err });
-  }
-});
-
-app.listen(port, () => console.log(`Salon backend listening on port ${port}`));
