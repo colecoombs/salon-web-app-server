@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 
 import adminRoutes from "./routes/admin.js";          // POST /api/login, GET /api/admin/appointments
 import appointmentRoutes from "./routes/appointments.js"; // GET/POST/GET-all under /api/appointments
+import contactRoutes from "./routes/contact.js";         // POST /api/contact
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 // NOTE: Both routers are self-contained and connect to Supabase using env vars.
 app.use("/api", adminRoutes);
 app.use("/api", appointmentRoutes);
+app.use("/api", contactRoutes);
 
 // --- 404 handler (after routes) ---
 app.use((req, res) => {

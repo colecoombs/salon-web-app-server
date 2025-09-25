@@ -20,13 +20,14 @@
   "homepage": "https://github.com/colecoombs/salon-web-app-server#readme",
   "description": "",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "@supabase/supabase-js": "^2.51.0",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
-    "morgan": "^1.10.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0"
   }
 }
