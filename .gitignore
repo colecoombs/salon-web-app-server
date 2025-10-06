@@ -10,7 +10,11 @@ yarn-error.log*
 
 # dotenv environment variables
 .env
-.env.*
+.env.local
+.env.production
+.env.development
+# Allow .env.example to be committed
+!.env.example
 
 # OS generated files
 .DS_Store
