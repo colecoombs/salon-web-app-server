@@ -10,15 +10,25 @@ const router = Router();
 const {
   SUPABASE_URL,
   SUPABASE_SERVICE_ROLE_KEY,
-  JWT_SECRET,
+  JWT_SECRET = "PLEASE_SET_A_REAL_SECRET",
   TWILIO_ACCOUNT_SID,
   TWILIO_AUTH_TOKEN,
   TWILIO_PHONE_NUMBER,
   SALON_OWNER_PHONE,
 } = process.env;
 
-// Initialize Twilio client
-const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+// Initialize Twilio client only if credentials are available
+let twilioClient = null;
+if (TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN) {
+  try {
+    twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+    console.log("[appointments.js] Twilio client initialized successfully");
+  } catch (error) {
+    console.warn("[appointments.js] Failed to initialize Twilio client:", error.message);
+  }
+} else {
+  console.warn("[appointments.js] Twilio credentials not provided - SMS features disabled");
+}
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.warn(
@@ -117,28 +127,41 @@ router.post("/appointments", async (req, res) => {
 
     if (error) throw error;
 
-    // Send SMS to salon owner for approval
-    const message = await twilioClient.messages.create({
-      body: `New appointment request:\n
+    // Send SMS to salon owner for approval (if Twilio is configured)
+    if (twilioClient && TWILIO_PHONE_NUMBER && SALON_OWNER_PHONE) {
+      try {
+        const message = await twilioClient.messages.create({
+          body: `New appointment request:\n
 Client: ${client}
 Service: ${service}
 Date: ${date}
 Time: ${time}
 Phone: ${phone}\n
 Reply YES to approve or NO to deny.`,
-      from: TWILIO_PHONE_NUMBER,
-      to: SALON_OWNER_PHONE
-    });
+          from: TWILIO_PHONE_NUMBER,
+          to: SALON_OWNER_PHONE
+        });
 
-    // Store the message SID in the appointment record for tracking
-    await supabase
-      .from("appointments")
-      .update({ twilio_message_sid: message.sid })
-      .eq("id", data.id);
+        // Store the message SID in the appointment record for tracking
+        await supabase
+          .from("appointments")
+          .update({ twilio_message_sid: message.sid })
+          .eq("id", data.id);
 
+        return res.status(201).json({ 
+          ...data, 
+          message: "Appointment request sent for approval. You will receive a confirmation shortly." 
+        });
+      } catch (smsError) {
+        console.error("SMS sending failed:", smsError);
+        // Continue without SMS - appointment is still created
+      }
+    }
+
+    // Return success even if SMS is not configured
     return res.status(201).json({ 
       ...data, 
-      message: "Appointment request sent for approval. You will receive a confirmation shortly." 
+      message: "Appointment request received successfully." 
     });
   } catch (err) {
     console.error("POST /appointments error:", err);
@@ -173,6 +196,11 @@ router.get("/appointments", requireAuth, async (_req, res) => {
  */
 router.post("/appointments/sms-webhook", async (req, res) => {
   try {
+    // Check if Twilio is configured
+    if (!twilioClient || !SALON_OWNER_PHONE) {
+      return res.status(503).json({ error: "SMS functionality not configured" });
+    }
+
     const { Body: response, From: from } = req.body;
     
     // Verify the response is from the salon owner
